@@ -17,7 +17,7 @@ from openpilot.selfdrive.frogpilot.controls.frogpilot_planner import FrogPilotPl
 from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_tracking import FrogPilotTracking
 from openpilot.selfdrive.frogpilot.frogpilot_functions import backup_toggles
 from openpilot.selfdrive.frogpilot.frogpilot_utilities import is_url_pingable
-from openpilot.selfdrive.frogpilot.frogpilot_variables import FrogPilotVariables, get_frogpilot_toggles, params, params_memory
+from openpilot.selfdrive.frogpilot.frogpilot_variables import FrogPilotVariables, get_frogpilot_toggles, use_frogpilot_server, params, params_memory
 from openpilot.selfdrive.frogpilot.navigation.mapd import update_mapd
 
 locks = {
@@ -203,6 +203,10 @@ def frogpilot_thread():
     if run_update_checks:
       run_thread_with_lock("update_active_theme", theme_manager.update_active_theme, (time_validated, frogpilot_toggles,))
       run_thread_with_lock("update_checks", update_checks, (model_manager, now, theme_manager, frogpilot_toggles))
+
+      if not frogpilot_toggles.use_frogpilot_server and use_frogpilot_server() and not started:
+        frogpilot_variables.update(started)
+        HARDWARE.reboot()
 
       run_update_checks = False
     elif not time_validated:
