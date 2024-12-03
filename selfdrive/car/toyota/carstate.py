@@ -71,7 +71,6 @@ class CarState(CarStateBase):
     self.lkas_hud = {}
     self.pcm_accel_net = 0.0
     self.gvc = 0.0
-    self.secoc_synchronization = None
 
     # FrogPilot variables
     self.latActive_previous = False
@@ -83,7 +82,6 @@ class CarState(CarStateBase):
   def update(self, cp, cp_cam, CC, frogpilot_toggles):
     ret = car.CarState.new_message()
     fp_ret = custom.FrogPilotCarState.new_message()
-    cp_acc = cp_cam if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) else cp
 
     if not self.CP.flags & ToyotaFlags.SECOC.value:
       self.gvc = cp.vl["VSC1S07"]["GVC"]
@@ -288,6 +286,9 @@ class CarState(CarStateBase):
       ("PCM_CRUISE_SM", 1),
       ("STEER_TORQUE_SENSOR", 50),
     ]
+
+    if not CP.flags & ToyotaFlags.SECOC.value:
+      messages.append(("VSC1S07", 20))
 
     if CP.carFingerprint in (TSS2_CAR - SECOC_CAR - {CAR.LEXUS_NX_TSS2, CAR.TOYOTA_ALPHARD_TSS2, CAR.LEXUS_IS_TSS2}):
       messages.append(("CLUTCH", 15))

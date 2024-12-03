@@ -52,6 +52,9 @@ class FrogPilotVCruise:
     elif self.override_force_stop_timer > 0:
       self.override_force_stop_timer -= DT_MDL
 
+    v_cruise_cluster = max(controlsState.vCruiseCluster * CV.KPH_TO_MS, v_cruise)
+    v_cruise_diff = v_cruise_cluster - v_cruise
+
     v_ego_cluster = max(carState.vEgoCluster, v_ego)
     v_ego_diff = v_ego_cluster - v_ego
 
@@ -117,7 +120,7 @@ class FrogPilotVCruise:
             self.overridden_speed = v_ego_cluster
           self.overridden_speed = clip(self.overridden_speed, self.slc_target, v_cruise)
         elif frogpilot_toggles.speed_limit_controller_override_set_speed:
-          self.overridden_speed = v_cruise
+          self.overridden_speed = v_cruise_cluster
       else:
         self.overridden_speed = 0
     else:
@@ -149,5 +152,8 @@ class FrogPilotVCruise:
 
       targets = [self.mtsc_target, max(self.overridden_speed, self.slc_target) - v_ego_diff, self.vtsc_target]
       v_cruise = float(min([target if target > CRUISING_SPEED else v_cruise for target in targets]))
+
+    self.mtsc_target += v_cruise_diff
+    self.vtsc_target += v_cruise_diff
 
     return v_cruise

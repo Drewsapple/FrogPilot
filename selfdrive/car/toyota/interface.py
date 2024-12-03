@@ -126,14 +126,14 @@ class CarInterface(CarInterfaceBase):
     #  - cars w/ DSU disconnected
     #  - TSS2 cars with camera sending ACC_CONTROL where we can block it
     # openpilot longitudinal behind experimental long toggle:
-    #  - TSS2 radar ACC cars (disables radar)
+    #  - TSS2 radar ACC cars w/ smartDSU installed
+    #  - TSS2 radar ACC cars w/o smartDSU installed (disables radar)
+    #  - TSS-P DSU-less cars w/ CAN filter installed (no radar parser yet)
 
     if ret.flags & ToyotaFlags.SECOC.value:
       ret.openpilotLongitudinalControl = False
     else:
-      ret.openpilotLongitudinalControl = use_sdsu or ret.enableDsu or \
-        candidate in (TSS2_CAR - RADAR_ACC_CAR) or \
-        bool(ret.flags & ToyotaFlags.DISABLE_RADAR.value)
+      ret.openpilotLongitudinalControl = use_sdsu or ret.enableDsu or candidate in (TSS2_CAR - RADAR_ACC_CAR) or bool(ret.flags & ToyotaFlags.DISABLE_RADAR.value)
     ret.openpilotLongitudinalControl &= not disable_openpilot_long
 
     ret.autoResumeSng = ret.openpilotLongitudinalControl and candidate in NO_STOP_TIMER_CAR

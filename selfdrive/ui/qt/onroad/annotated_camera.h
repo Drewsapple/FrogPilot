@@ -182,7 +182,6 @@ private:
   float speedConversionMetrics;
   float unconfirmedSpeedLimit;
   float upcomingSpeedLimit;
-  float vCruiseDiff;
   float vtscSpeed;
 
   int alertHeight;

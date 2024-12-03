@@ -219,10 +219,13 @@ static void toyota_rx_hook(const CANPacket_t *to_push) {
       }
     } else {
       if (addr == 0x1D2) {
-        bool cruise_engaged = GET_BIT(to_push, 5U);  // PCM_CRUISE.CRUISE_ACTIVE
+        // 5th bit is CRUISE_ACTIVE
+        bool cruise_engaged = GET_BIT(to_push, 5U);
         pcm_cruise_check(cruise_engaged);
+
+        // sample gas pedal
         if (!enable_gas_interceptor) {
-          gas_pressed = !GET_BIT(to_push, 4U);  // PCM_CRUISE.GAS_RELEASED
+          gas_pressed = !GET_BIT(to_push, 4U);
         }
       }
       if (!toyota_alt_brake && (addr == 0x226)) {

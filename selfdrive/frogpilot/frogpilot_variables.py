@@ -298,9 +298,9 @@ frogpilot_default_params: list[tuple[str, bool | bytes | int | float | str]] = [
   ("SLCLookaheadHigher", 5),
   ("SLCLookaheadLower", 5),
   ("SLCOverride", 1),
-  ("SLCPriority1", "Dashboard"),
-  ("SLCPriority2", "Navigation"),
-  ("SLCPriority3", "Map Data"),
+  ("SLCPriority1", "Navigation"),
+  ("SLCPriority2", "Map Data"),
+  ("SLCPriority3", "Dashboard"),
   ("SNGHack", 1),
   ("SpeedLimitChangedAlert", 1),
   ("SpeedLimitController", 1),
@@ -369,7 +369,7 @@ class FrogPilotVariables:
 
     if msg_bytes:
       with car.CarParams.from_bytes(msg_bytes) as CP:
-        always_on_lateral_set = key == "CarParams" and CP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL
+        always_on_lateral_set = CP.alternativeExperience & ALTERNATIVE_EXPERIENCE.ALWAYS_ON_LATERAL
         car_make = CP.carName
         car_model = CP.carFingerprint
         has_auto_tune = (car_model == "hyundai" or car_model == "toyota") and CP.lateralTuning.which == "torque"
@@ -377,7 +377,7 @@ class FrogPilotVariables:
         has_pedal = CP.enableGasInterceptor
         has_radar = not CP.radarUnavailable
         is_pid_car = CP.lateralTuning.which == "pid"
-        max_acceleration_enabled = key == "CarParams" and CP.alternativeExperience & ALTERNATIVE_EXPERIENCE.RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX
+        max_acceleration_enabled = CP.alternativeExperience & ALTERNATIVE_EXPERIENCE.RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX
         openpilot_longitudinal = CP.openpilotLongitudinalControl
         pcm_cruise = CP.pcmCruise
     else:
@@ -410,20 +410,20 @@ class FrogPilotVariables:
     toggle.use_wheel_speed = toggle.advanced_custom_onroad_ui and params.get_bool("WheelSpeed")
 
     toggle.advanced_lateral_tuning = params.get_bool("AdvancedLateralTune")
+    toggle.force_auto_tune = toggle.advanced_lateral_tuning and not has_auto_tune and not is_pid_car and params.get_bool("ForceAutoTune")
+    toggle.force_auto_tune_off = toggle.advanced_lateral_tuning and has_auto_tune and not is_pid_car and params.get_bool("ForceAutoTuneOff")
     stock_steer_friction = params.get_float("SteerFrictionStock")
     toggle.steer_friction = params.get_float("SteerFriction") if toggle.advanced_lateral_tuning else stock_steer_friction
-    toggle.use_custom_steer_friction = toggle.steer_friction != stock_steer_friction and not is_pid_car
+    toggle.use_custom_steer_friction = toggle.steer_friction != stock_steer_friction and not is_pid_car and not toggle.force_auto_tune or toggle.force_auto_tune_off
     stock_steer_kp = params.get_float("SteerKPStock")
     toggle.steer_kp = params.get_float("SteerKP") if toggle.advanced_lateral_tuning else stock_steer_kp
     toggle.use_custom_kp = toggle.steer_kp != stock_steer_kp and not is_pid_car
     stock_steer_lat_accel_factor = params.get_float("SteerLatAccelStock")
     toggle.steer_lat_accel_factor = params.get_float("SteerLatAccel") if toggle.advanced_lateral_tuning else stock_steer_lat_accel_factor
-    toggle.use_custom_lat_accel_factor = toggle.steer_lat_accel_factor != stock_steer_lat_accel_factor and not is_pid_car
+    toggle.use_custom_lat_accel_factor = toggle.steer_lat_accel_factor != stock_steer_lat_accel_factor and not is_pid_car and not toggle.force_auto_tune or toggle.force_auto_tune_off
     stock_steer_ratio = params.get_float("SteerRatioStock")
     toggle.steer_ratio = params.get_float("SteerRatio") if toggle.advanced_lateral_tuning else stock_steer_ratio
-    toggle.use_custom_steer_ratio = toggle.steer_ratio != stock_steer_ratio
-    toggle.force_auto_tune = toggle.advanced_lateral_tuning and not has_auto_tune and not is_pid_car and params.get_bool("ForceAutoTune")
-    toggle.force_auto_tune_off = toggle.advanced_lateral_tuning and has_auto_tune and not is_pid_car and params.get_bool("ForceAutoTuneOff")
+    toggle.use_custom_steer_ratio = toggle.steer_ratio != stock_steer_ratio and not toggle.force_auto_tune or toggle.force_auto_tune_off
 
     toggle.alert_volume_control = params.get_bool("AlertVolumeControl")
     toggle.disengage_volume = params.get_int("DisengageVolume") if toggle.alert_volume_control else 101
@@ -567,7 +567,7 @@ class FrogPilotVariables:
     toggle.frogsgomoo_tweak = openpilot_longitudinal and car_make == "toyota" and params.get_bool("FrogsGoMoosTweak")
 
     toggle.holiday_themes = params.get_bool("HolidayThemes")
-    toggle.current_holiday_theme = params.get("CurrentHolidayTheme", encoding='utf-8') if params.get_bool("HolidayThemes") else None
+    toggle.current_holiday_theme = params.get("CurrentHolidayTheme", encoding='utf-8') if toggle.holiday_themes else None
 
     toggle.lane_change_customizations = params.get_bool("LaneChangeCustomizations")
     toggle.lane_change_delay = params.get_float("LaneChangeTime") if toggle.lane_change_customizations else 0
@@ -667,7 +667,7 @@ class FrogPilotVariables:
     toggle.quality_of_life_visuals = params.get_bool("QOLVisuals")
     toggle.camera_view = params.get_int("CameraView") if toggle.quality_of_life_visuals else 0
     toggle.driver_camera_in_reverse = toggle.quality_of_life_visuals and params.get_bool("DriverCamera")
-    toggle.onroad_distance_button = toggle.quality_of_life_visuals and params.get_bool("OnroadDistanceButton")
+    toggle.onroad_distance_button = openpilot_longitudinal and toggle.quality_of_life_visuals and params.get_bool("OnroadDistanceButton")
     toggle.standby_mode = toggle.quality_of_life_visuals and params.get_bool("StandbyMode")
     toggle.stopped_timer = toggle.quality_of_life_visuals and params.get_bool("StoppedTimer")
 
@@ -712,8 +712,8 @@ class FrogPilotVariables:
     toggle.speed_limit_priority_lowest = toggle.speed_limit_priority1 == "Lowest"
     toggle.speed_limit_sources = toggle.speed_limit_controller and params.get_bool("SpeedLimitSources")
 
-    toggle.startup_alert_top = params.get("StartupMessageTop", encoding='utf-8') or ""
-    toggle.startup_alert_bottom = params.get("StartupMessageBottom", encoding='utf-8') or ""
+    toggle.startup_alert_top = params.get("StartupMessageTop", encoding='utf-8') or str(self.default_frogpilot_toggles.StartupMessageTop)
+    toggle.startup_alert_bottom = params.get("StartupMessageBottom", encoding='utf-8') or str(self.default_frogpilot_toggles.StartupMessageTop)
 
     toggle.tethering_config = params.get_int("TetheringEnabled")
 
