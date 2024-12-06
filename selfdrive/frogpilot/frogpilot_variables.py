@@ -176,7 +176,7 @@ frogpilot_default_params: list[tuple[str, bool | bytes | int | float | str]] = [
   ("HolidayThemes", 1),
   ("HumanAcceleration", 1),
   ("HumanFollowing", 1),
-  ("HyundaiRadarTracks", 0),
+  ("HyundaiRadarTracks", 1),
   ("IncreasedStoppedDistance", 3),
   ("IncreaseThermalLimits", 0),
   ("JerkInfo", 1),
