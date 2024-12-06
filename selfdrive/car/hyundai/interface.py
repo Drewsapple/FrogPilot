@@ -2,7 +2,7 @@ import cereal.messaging as messaging
 from cereal import car, custom
 from panda import Panda
 from openpilot.common.params import Params
-from openpilot.selfdrive.car.fingerprinting import can_fingerprint, get_one_can
+from openpilot.selfdrive.car.hyundai.fingerprinting import can_fingerprint, get_one_can
 from openpilot.selfdrive.car.hyundai.enable_radar_tracks import enable_radar_tracks
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
 from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, HyundaiFlagsFP, CAR, DBC, CANFD_CAR, CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, \
@@ -208,22 +208,21 @@ class CarInterface(CarInterfaceBase):
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
       disable_ecu(logcan, sendcan, bus=CanBus(CP).ECAN, addr=0x7B1, com_cont_req=b'\x28\x83\x01')
 
-    # for enabling radar tracks on startup
-    # some CAN platforms are able to enable radar tracks config at the radar ECU,
-    # but the config is reset after ignition cycle
+    # enable radar tracks on startup
     if CP.fpFlags & HyundaiFlagsFP.FP_RADAR_TRACKS:
-      enable_radar_tracks(logcan, sendcan, bus=0, addr=0x7d0, config_data_id=b'\x01\x42')
-
       params = Params()
-      rt_avail = params.get_bool("HyundaiRadarTracksAvailable")
-      rt_avail_persist = params.get_bool("HyundaiRadarTracksAvailablePersistent")
-      params.put_bool_nonblocking("HyundaiRadarTracksAvailableCache", rt_avail)
-      if not rt_avail_persist:
-        messaging.drain_sock_raw(logcan)
-        fingerprint = can_fingerprint(lambda: get_one_can(logcan))
-        radar_unavailable = RADAR_START_ADDR not in fingerprint[1] or DBC[CP.carFingerprint]["radar"] is None
-        params.put_bool_nonblocking("HyundaiRadarTracksAvailable", not radar_unavailable)
-        params.put_bool_nonblocking("HyundaiRadarTracksAvailablePersistent", True)
+      if params.get_bool("HyundaiRadarTracks"):
+        enable_radar_tracks(logcan, sendcan, bus=0, addr=0x7d0, config_data_id=b'\x01\x42')
+
+        rt_avail = params.get_bool("HyundaiRadarTracksAvailable")
+        rt_avail_persist = params.get_bool("HyundaiRadarTracksAvailablePersistent")
+        params.put_bool_nonblocking("HyundaiRadarTracksAvailableCache", rt_avail)
+        if not rt_avail_persist:
+          messaging.drain_sock_raw(logcan)
+          fingerprint = can_fingerprint(lambda: get_one_can(logcan))
+          radar_unavailable = RADAR_START_ADDR not in fingerprint[1] or DBC[CP.carFingerprint]["radar"] is None
+          params.put_bool_nonblocking("HyundaiRadarTracksAvailable", not radar_unavailable)
+          params.put_bool_nonblocking("HyundaiRadarTracksAvailablePersistent", True)
 
 
   def _update(self, c, frogpilot_toggles):
@@ -250,7 +249,7 @@ class CarInterface(CarInterfaceBase):
     if self.low_speed_alert:
       events.add(car.CarEvent.EventName.belowSteerSpeed)
 
-    if self.CS.params_list.hyundai_radar_tracks_available and not self.CS.params_list.hyundai_radar_tracks_available_cache:
+    if frogpilot_toggles.hyundai_radar_tracks and self.CS.params_list.hyundai_radar_tracks_available and not self.CS.params_list.hyundai_radar_tracks_available_cache:
       events.add(car.CarEvent.EventName.hyundaiRadarTracksAvailable)
 
     ret.events = events.to_msg()

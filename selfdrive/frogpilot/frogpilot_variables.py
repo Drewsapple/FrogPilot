@@ -176,6 +176,7 @@ frogpilot_default_params: list[tuple[str, bool | bytes | int | float | str]] = [
   ("HolidayThemes", 1),
   ("HumanAcceleration", 1),
   ("HumanFollowing", 1),
+  ("HyundaiRadarTracks", 0),
   ("IncreasedStoppedDistance", 3),
   ("IncreaseThermalLimits", 0),
   ("JerkInfo", 1),
@@ -556,6 +557,8 @@ class FrogPilotVariables:
 
     toggle.experimental_gm_tune = openpilot_longitudinal and car_make == "gm" and params.get_bool("ExperimentalGMTune")
 
+    toggle.hyundai_radar_tracks = car_make == "hyundai" and params.get_bool("HyundaiRadarTracks")
+
     toggle.experimental_mode_via_press = openpilot_longitudinal and params.get_bool("ExperimentalModeActivation")
     toggle.experimental_mode_via_distance = toggle.experimental_mode_via_press and params.get_bool("ExperimentalModeViaDistance")
     toggle.experimental_mode_via_lkas = not toggle.always_on_lateral_lkas and toggle.experimental_mode_via_press and car_make != "subaru" and params.get_bool("ExperimentalModeViaLKAS")
@@ -861,6 +864,8 @@ class FrogPilotVariables:
 
       toggle.experimental_gm_tune = bool(openpilot_longitudinal and car_make == "gm" and self.default_frogpilot_toggles.ExperimentalGMTune)
 
+      toggle.hyundai_radar_tracks = bool(car_make == "hyundai" and self.default_frogpilot_toggles.HyundaiRadarTracks)
+
       toggle.experimental_mode_via_press = bool(openpilot_longitudinal and self.default_frogpilot_toggles.ExperimentalModeActivation)
       toggle.experimental_mode_via_distance = bool(toggle.experimental_mode_via_press and self.default_frogpilot_toggles.ExperimentalModeViaDistance)
       toggle.experimental_mode_via_lkas = bool(not toggle.always_on_lateral_lkas and toggle.experimental_mode_via_press and car_make != "subaru" and self.default_frogpilot_toggles.ExperimentalModeViaLKAS)
@@ -1087,6 +1092,8 @@ class FrogPilotVariables:
       toggle.offline_mode = bool(toggle.device_management and self.default_frogpilot_toggles.OfflineMode)
 
       toggle.experimental_gm_tune = bool(openpilot_longitudinal and car_make == "gm" and self.default_frogpilot_toggles.ExperimentalGMTune)
+
+      toggle.hyundai_radar_tracks = bool(car_make == "hyundai" and self.default_frogpilot_toggles.HyundaiRadarTracks)
 
       toggle.frogsgomoo_tweak = bool(openpilot_longitudinal and car_make == "toyota" and self.default_frogpilot_toggles.FrogsGoMoosTweak)
 

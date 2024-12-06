@@ -17,7 +17,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.pandad import can_list_to_can_capnp
 from openpilot.selfdrive.car.car_helpers import get_car, get_one_can
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
-from openpilot.selfdrive.car.param_manager import ParamManager
+from openpilot.selfdrive.car.hyundai.radar_manager import ParamManager
 from openpilot.selfdrive.controls.lib.events import Events
 
 from openpilot.selfdrive.frogpilot.frogpilot_variables import get_frogpilot_toggles, update_frogpilot_toggles
@@ -112,9 +112,9 @@ class Car:
     self.params.put_nonblocking("CarParamsCache", cp_bytes)
     self.params.put_nonblocking("CarParamsPersistent", cp_bytes)
 
-    self.param_manager: ParamManager = ParamManager()
-    self.param_manager.update(self.params)
-    self._params_list: SimpleNamespace = self.param_manager.get_params()
+    self.radar_manager: ParamManager = ParamManager()
+    self.radar_manager.update(self.params)
+    self._params_list: SimpleNamespace = self.radar_manager.get_params()
 
     update_frogpilot_toggles()
 
@@ -220,8 +220,8 @@ class Car:
 
   def fp_params_thread(self, event: threading.Event) -> None:
     while not event.is_set():
-        self.param_manager.update(self.params)
-        self._params_list = self.param_manager.get_params()
+        self.radar_manager.update(self.params)
+        self._params_list = self.radar_manager.get_params()
         time.sleep(0.1)
 
   def frogpilot_params_thread(self, event: threading.Event) -> None:

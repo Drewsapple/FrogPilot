@@ -901,10 +901,6 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: high_cpu_usage_alert,
   },
 
-  EventName.hyundaiRadarTracksAvailable: {
-    ET.PERMANENT: NormalPermanentAlert("Radar tracks available. Restart the car to initialize"),
-  },
-
   EventName.accFaulted: {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Cruise Fault: Restart the Car"),
     ET.PERMANENT: NormalPermanentAlert("Cruise Fault: Restart the car to engage"),
@@ -1068,6 +1064,11 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   EventName.holidayActive: {
     ET.PERMANENT: holiday_alert,
   },
+
+  EventName.hyundaiRadarTracksAvailable: {
+    ET.PERMANENT: NormalPermanentAlert("Radar tracks initialized. Restart the car and turn on OPLong to engage."),
+  },
+
 
   EventName.laneChangeBlockedLoud: {
     ET.WARNING: Alert(
