@@ -220,7 +220,7 @@ def frogpilot_thread():
         HARDWARE.reboot()
 
       run_update_checks = False
-    elif not time_validated:
+    elif not time_validated and not toggles_updated:
       time_validated = system_time_valid()
       if not time_validated:
         continue
