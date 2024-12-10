@@ -143,7 +143,7 @@ def frogpilot_thread():
 
   radarless_model = frogpilot_toggles.radarless_model
 
-  toggles_last_updated = datetime.datetime.now() + datetime.timedelta(seconds=5)
+  toggles_last_updated = datetime.datetime.now()
 
   pm = messaging.PubMaster(['frogpilotPlan'])
   sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'deviceState', 'modelV2', 'radarState',
