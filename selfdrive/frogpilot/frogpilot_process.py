@@ -25,7 +25,6 @@ locks = {
   "download_all_models": threading.Lock(),
   "download_model": threading.Lock(),
   "download_theme": threading.Lock(),
-  "update_active_theme": threading.Lock(),
   "update_checks": threading.Lock(),
   "update_mapd": threading.Lock(),
   "update_models": threading.Lock(),
@@ -167,7 +166,7 @@ def frogpilot_thread():
       if time_validated:
         run_thread_with_lock("backup_toggles", backup_toggles, (params_storage,))
 
-      run_thread_with_lock("update_active_theme", theme_manager.update_active_theme, (time_validated, frogpilot_toggles,))
+      theme_manager.update_active_theme(time_validated, frogpilot_toggles)
 
       toggles_last_updated = now
     toggles_updated = (now - toggles_last_updated).total_seconds() <= 1
@@ -213,7 +212,7 @@ def frogpilot_thread():
     run_update_checks &= time_validated
 
     if run_update_checks:
-      run_thread_with_lock("update_active_theme", theme_manager.update_active_theme, (time_validated, frogpilot_toggles,))
+      theme_manager.update_active_theme(time_validated, frogpilot_toggles)
       run_thread_with_lock("update_checks", update_checks, (model_manager, now, theme_manager, frogpilot_toggles))
 
       if not frogpilot_toggles.use_frogpilot_server and use_frogpilot_server() and not started:
@@ -226,7 +225,7 @@ def frogpilot_thread():
       if not time_validated:
         continue
 
-      run_thread_with_lock("update_active_theme", theme_manager.update_active_theme, (time_validated, frogpilot_toggles,))
+      theme_manager.update_active_theme(time_validated, frogpilot_toggles)
       run_thread_with_lock("update_models", model_manager.update_models, (True,))
       run_thread_with_lock("update_themes", theme_manager.update_themes, (frogpilot_toggles, True,))
 

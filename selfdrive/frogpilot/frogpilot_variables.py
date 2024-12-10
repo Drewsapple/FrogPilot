@@ -570,8 +570,8 @@ class FrogPilotVariables:
 
     toggle.frogsgomoo_tweak = openpilot_longitudinal and car_make == "toyota" and (params.get_bool("FrogsGoMoosTweak") if tuning_level >= level["FrogsGoMoosTweak"] else default.get_bool("FrogsGoMoosTweak"))
 
-    holiday_themes = params.get_bool("HolidayThemes") if tuning_level >= level["HolidayThemes"] else default.get_bool("HolidayThemes")
-    toggle.current_holiday_theme = params_memory.get("CurrentHolidayTheme", encoding="utf-8") if holiday_themes else None
+    toggle.holiday_themes = params.get_bool("HolidayThemes") if tuning_level >= level["HolidayThemes"] else default.get_bool("HolidayThemes")
+    toggle.current_holiday_theme = params_memory.get("CurrentHolidayTheme", encoding="utf-8") if toggle.holiday_themes else None
 
     lane_change_customizations = params.get_bool("LaneChangeCustomizations") if tuning_level >= level["LaneChangeCustomizations"] else default.get_bool("LaneChangeCustomizations")
     toggle.lane_change_delay = params.get_float("LaneChangeTime") if lane_change_customizations and tuning_level >= level["LaneChangeTime"] else default.get_float("LaneChangeTime")
@@ -643,13 +643,13 @@ class FrogPilotVariables:
     toggle.old_long_api = openpilot_longitudinal and car_make == "gm" and not (params.get_bool("NewLongAPIGM") if tuning_level >= level["NewLongAPIGM"] else default.get_bool("NewLongAPIGM"))
     toggle.old_long_api |= openpilot_longitudinal and car_make == "hyundai" and not (params.get_bool("NewLongAPI") if tuning_level >= level["NewLongAPI"] else default.get_bool("NewLongAPI"))
 
-    toggle.personalize_openpilot = params.get_bool("PersonalizeOpenpilot") if tuning_level >= level["PersonalizeOpenpilot"] else default.get_bool("PersonalizeOpenpilot")
-    toggle.color_scheme = params.get("CustomColors", encoding='utf-8') if toggle.personalize_openpilot else "stock"
-    toggle.distance_icons = params.get("CustomDistanceIcons", encoding='utf-8') if toggle.personalize_openpilot else "stock"
-    toggle.icon_pack = params.get("CustomIcons", encoding='utf-8') if toggle.personalize_openpilot else "stock"
-    toggle.signal_icons = params.get("CustomSignals", encoding='utf-8') if toggle.personalize_openpilot else "stock"
-    toggle.sound_pack = params.get("CustomSounds", encoding='utf-8') if toggle.personalize_openpilot else "stock"
-    toggle.wheel_image = params.get("WheelIcon", encoding='utf-8') if toggle.personalize_openpilot else "stock"
+    personalize_openpilot = params.get_bool("PersonalizeOpenpilot") if tuning_level >= level["PersonalizeOpenpilot"] else default.get_bool("PersonalizeOpenpilot")
+    toggle.color_scheme = params.get("CustomColors", encoding='utf-8') if personalize_openpilot else "stock"
+    toggle.distance_icons = params.get("CustomDistanceIcons", encoding='utf-8') if personalize_openpilot else "stock"
+    toggle.icon_pack = params.get("CustomIcons", encoding='utf-8') if personalize_openpilot else "stock"
+    toggle.signal_icons = params.get("CustomSignals", encoding='utf-8') if personalize_openpilot else "stock"
+    toggle.sound_pack = params.get("CustomSounds", encoding='utf-8') if personalize_openpilot else "stock"
+    toggle.wheel_image = params.get("WheelIcon", encoding='utf-8') if personalize_openpilot else "stock"
 
     quality_of_life_lateral = params.get_bool("QOLLateral") if tuning_level >= level["QOLLateral"] else default.get_bool("QOLLateral")
     toggle.pause_lateral_below_speed = params.get_int("PauseLateralSpeed") * speed_conversion if quality_of_life_lateral and tuning_level >= level["PauseLateralSpeed"] else default.get_int("PauseLateralSpeed") * CV.MPH_TO_MS
