@@ -9,6 +9,7 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.simple_kalman import KF1D
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
+from openpilot.selfdrive.car.hyundai.values import HyundaiFlags
 from openpilot.selfdrive.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
@@ -148,7 +149,8 @@ class LongitudinalPlanner:
     self.allow_throttle = True
 
     self.a_desired = init_a
-    self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
+    v_ego_sec = 0.6 if CP.carName == "hyundai" and not CP.flags & (HyundaiFlags.HYBRID | HyundaiFlags.EV) else 2.0
+    self.v_desired_filter = FirstOrderFilter(init_v, v_ego_sec, self.dt)
     self.v_model_error = 0.0
 
     self.lead_one = Lead()
