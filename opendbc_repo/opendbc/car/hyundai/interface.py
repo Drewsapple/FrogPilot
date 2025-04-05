@@ -147,6 +147,9 @@ class CarInterface(CarInterfaceBase):
     if candidate == CAR.KIA_OPTIMA_G4_FL:
       ret.steerActuatorDelay = 0.2
 
+    if candidate == CAR.KIA_NIRO_EV_2ND_GEN:
+      ret.steerActuatorDelay = 0.15
+
     # Dashcam cars are missing a test route, or otherwise need validation
     # TODO: Optima Hybrid 2017 uses a different SCC12 checksum
     ret.dashcamOnly = candidate in {CAR.KIA_OPTIMA_H, }
