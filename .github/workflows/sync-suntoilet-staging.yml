@@ -26,7 +26,9 @@ jobs:
       
       - name: Add suntoilet remote
         run: |
-          git remote add suntoilet https://github.com/suntoilet/suntoilet.git || true
+          if ! git remote get-url suntoilet > /dev/null 2>&1; then
+            git remote add suntoilet https://github.com/suntoilet/suntoilet.git
+          fi
           git fetch suntoilet
       
       - name: Pull from suntoilet staging branch
@@ -41,13 +43,10 @@ jobs:
       - name: Push to current repository
         if: success()
         run: |
-          # Extract branch name from GITHUB_REF
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          
           # Ensure we're on a branch
           if [[ "$GITHUB_REF" != refs/heads/* ]]; then
             echo "::warning::Workflow not running on a branch (ref: $GITHUB_REF). Skipping push."
             exit 0
           fi
           
-          git push origin HEAD:${BRANCH_NAME}
+          git push origin HEAD
