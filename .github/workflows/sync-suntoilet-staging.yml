@@ -1,0 +1,36 @@
+name: Sync suntoilet staging branch
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Add suntoilet remote
+        run: |
+          git remote add suntoilet https://github.com/suntoilet/suntoilet.git || true
+          git fetch suntoilet
+      
+      - name: Pull from suntoilet staging branch
+        run: |
+          git pull suntoilet staging --no-edit
+      
+      - name: Push to current repository
+        run: |
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
