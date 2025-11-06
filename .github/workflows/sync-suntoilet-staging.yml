@@ -29,8 +29,21 @@ jobs:
       
       - name: Pull from suntoilet staging branch
         run: |
-          git pull suntoilet staging --no-edit
+          git pull suntoilet staging --no-edit --allow-unrelated-histories || {
+            echo "Merge conflict or pull failed. Please resolve manually."
+            exit 1
+          }
       
       - name: Push to current repository
+        if: success()
         run: |
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+          # Extract branch name from GITHUB_REF
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          
+          # Ensure we're on a branch
+          if [[ "$GITHUB_REF" != refs/heads/* ]]; then
+            echo "Not on a branch. Skipping push."
+            exit 1
+          fi
+          
+          git push origin HEAD:${BRANCH_NAME}
