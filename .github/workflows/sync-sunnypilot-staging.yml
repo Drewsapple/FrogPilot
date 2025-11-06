@@ -1,0 +1,64 @@
+name: Sync sunnypilot staging branch
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push changes to the repository
+    
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1  # Only need latest commit
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Add sunnypilot remote
+        run: |
+          if ! git remote get-url sunnypilot > /dev/null 2>&1; then
+            git remote add sunnypilot https://github.com/sunnypilot/sunnypilot.git
+          fi
+          
+          if ! git fetch sunnypilot staging; then
+            echo "::error::Failed to fetch from sunnypilot remote."
+            echo "::error::Check network connectivity and repository access."
+            exit 1
+          fi
+      
+      - name: Merge sunnypilot staging branch
+        run: |
+          # Check if there are new commits to merge
+          if git merge-base --is-ancestor sunnypilot/staging HEAD; then
+            echo "::notice::No new changes in sunnypilot/staging. Already up to date."
+            echo "skip_push=true" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          if ! git merge sunnypilot/staging --no-edit; then
+            echo "::error::Failed to merge sunnypilot/staging branch. Merge conflicts detected."
+            echo "::error::Please manually resolve conflicts and push the changes."
+            echo "::error::Run: git fetch sunnypilot staging && git merge sunnypilot/staging"
+            exit 1
+          fi
+      
+      - name: Push to staging branch
+        if: success() && env.skip_push != 'true'
+        run: |
+          if ! git push origin HEAD:staging; then
+            echo "::error::Failed to push changes to staging branch."
+            echo "::error::Check repository permissions and branch protection rules."
+            exit 1
+          fi
+          
+          echo "::notice::Successfully pushed changes from sunnypilot/staging to staging branch"
